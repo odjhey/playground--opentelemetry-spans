@@ -7,7 +7,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --import ./src/instrumentation.ts src/server.ts",
-    "migrate": "node scripts/migrate.cjs"
+    "migrate": "node scripts/migrate.cjs",
+    "infra:jaeger:up": "docker compose -f ./infra/compose.yml up"
   },
   "devDependencies": {
     "@pgkit/migrator": "0.1.14",
