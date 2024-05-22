@@ -3,6 +3,7 @@ import * as DB from './db'
 import { z } from 'zod'
 import { newSpanLifeCycle } from './lib/span-factory'
 import { makeCreateMessage } from './logic/create-message'
+import { withSpan } from './lib/with-span'
 
 const server = fastify()
 
@@ -72,7 +73,10 @@ server.post('/ping-parallel', async (request, reply) => {
     return reply.status(400).send(validate.error)
   }
 
-  const [createMessage] = makeCreateMessage({ text: validate.data.text })
+  const [createMessage] = withSpan(
+    ...makeCreateMessage({ text: validate.data.text })
+  )
+
   const m = await createMessage({
     deps: [
       {
