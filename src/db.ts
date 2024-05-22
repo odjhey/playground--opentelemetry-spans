@@ -28,3 +28,13 @@ export const getMessages = async () => {
   )
   return messages
 }
+
+// create message
+export const createMessage = async (text: string) => {
+  const message = (await newPool()).one(
+    sql.typeAlias(
+      'message'
+    )`INSERT INTO message (text) VALUES (${text}) RETURNING *`
+  )
+  return message
+}
