@@ -1,13 +1,18 @@
 import { Span, trace } from '@opentelemetry/api'
 
-type SpanLifeCycle<Context, Attr extends Record<string, string>> = {
-  beforeExecution: (context: Context, attr: Partial<Attr>) => void
-  afterExecution: (context: Context, attr: Partial<Attr>) => void
+type DefaultContext = { span: { title: string } }
+type SpanLifeCycle<
+  Context extends DefaultContext,
+  Attr extends Record<string, string>
+> = {
+  // @todo move context to end
+  beforeExecution: (context: Context | undefined, attr: Partial<Attr>) => void
+  afterExecution: (context: Context | undefined, attr: Partial<Attr>) => void
   onExecutionError: (context: Context, error: Error) => void
 }
 
 export const newSpanLifeCycle: <
-  T,
+  T extends DefaultContext,
   A extends Record<string, string>
 >() => SpanLifeCycle<T, A> = () => {
   let span: Span
@@ -15,7 +20,7 @@ export const newSpanLifeCycle: <
   return {
     beforeExecution: (context, attr) => {
       const tracer = trace.getTracer('default')
-      span = tracer.startSpan('custom.attr', {
+      span = tracer.startSpan(context?.span.title ?? 'custom.attr', {
         attributes: { ...attr },
       })
       return null

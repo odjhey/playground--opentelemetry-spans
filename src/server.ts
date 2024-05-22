@@ -2,6 +2,7 @@ import fastify from 'fastify'
 import * as DB from './db'
 import { z } from 'zod'
 import { newSpanLifeCycle } from './lib/span-factory'
+import { makeCreateMessage } from './logic/create-message'
 
 const server = fastify()
 
@@ -21,9 +22,9 @@ server.post('/ping-serial', async (request, reply) => {
     return () =>
       new Promise((resolve) => {
         const lf = newSpanLifeCycle()
-        lf.beforeExecution(i, { wait: String(wait) })
+        lf.beforeExecution(undefined, { wait: String(wait) })
         setTimeout(() => {
-          lf.afterExecution(i, { wait: String(wait) })
+          lf.afterExecution(undefined, { wait: String(wait) })
           resolve(i)
         }, wait)
       })
@@ -55,9 +56,9 @@ server.post('/ping-parallel', async (request, reply) => {
     return () =>
       new Promise((resolve) => {
         const lf = newSpanLifeCycle()
-        lf.beforeExecution(i, { wait: String(wait) })
+        lf.beforeExecution(undefined, { wait: String(wait) })
         setTimeout(() => {
-          lf.afterExecution(i, { wait: String(wait) })
+          lf.afterExecution(undefined, { wait: String(wait) })
           resolve(i)
         }, wait)
       })
@@ -71,7 +72,18 @@ server.post('/ping-parallel', async (request, reply) => {
     return reply.status(400).send(validate.error)
   }
 
-  const m = await DB.createMessage(validate.data.text)
+  const [createMessage] = makeCreateMessage({ text: validate.data.text })
+  const m = await createMessage({
+    deps: [
+      {
+        name: 'createMessage',
+        fn: (input) => {
+          return DB.createMessage(input.text)
+        },
+      },
+    ],
+  })
+
   reply.send(m)
 })
 
