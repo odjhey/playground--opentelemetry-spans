@@ -12,25 +12,7 @@ server.get('/ping', async (request, reply) => {
   span?.setAttribute('custom-attribute-asdfl123', 'custom-value-9o8uc')
 
   const m = await DB.getMessages()
-
-  if (span) {
-    await new Promise((res) => {
-      const childSpan = tracer.startSpan(
-        'new-span',
-        undefined,
-        api.context.active()
-      )
-
-      setTimeout(() => {
-        childSpan.setAttribute('kuku2', 'lala')
-        childSpan.end()
-        res({})
-      }, 1000)
-    })
-    return 'pongers'
-  } else {
-    return 'pong\n'
-  }
+  return m
 })
 
 server.listen({ port: 8080 }, (err, address) => {
